@@ -12,6 +12,50 @@ int reg_x(const std::string& reg);
 uint16_t reorder_byte(const uint16_t byte);
 
 
+// helper function definitions
+uint16_t reorder_byte(const uint16_t byte)
+{
+    uint16_t rbyte = (0xFF00 & (byte << 8u)) | (0x00FF & (byte >> 8u));
+    return rbyte;
+}
+
+
+int reg_x(const std::string& reg)
+{
+    switch(reg.c_str()[1])
+    {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	    return std::atoi(&reg[1]);
+	case 'A':
+	    return 10;
+	case 'B':
+	    return 11;
+	case 'C':
+	    return 12;
+	case 'D':
+	    return 13;
+	case 'E':
+	    return 14;
+	case 'F':
+	    return 15;
+	default:
+	    break;
+    }
+
+    return -1;
+}
+
+// ---------------------------------------------------------------
+
 Generator::Generator
     (const std::vector<std::pair<TOKEN, std::string>>& tokstream,
      const std::unordered_map<std::string, uint16_t>& offset_table,
@@ -41,6 +85,10 @@ void Generator::init()
     parseTable.insert({TOKEN::DRW, &Generator::parseDRW});
     parseTable.insert({TOKEN::ADD, &Generator::parseADD});
     parseTable.insert({TOKEN::SNE, &Generator::parseSNE});
+    parseTable.insert({TOKEN::SE, &Generator::parseSE});
+    parseTable.insert({TOKEN::RET, &Generator::parseRET});
+    parseTable.insert({TOKEN::CALL, &Generator::parseCALL});
+    parseTable.insert({TOKEN::SUB, &Generator::parseSUB});
 }
 
 
@@ -127,6 +175,9 @@ void Generator::generate()
 }
 
 
+// ---------------------------------------------------------------
+// CHIP-8 instructions
+
 uint16_t Generator::parseCLS()
 {
     uint16_t byte = 0x00E0;
@@ -187,7 +238,13 @@ uint16_t Generator::parseLD()
     {
 	int reg = reg_x(v1);
 
-	if (arg2 == TOKEN::NUM)
+	if (arg2 == TOKEN::REG)
+	{
+	    int reg2 = reg_x(v2);
+	    byte = 0x8000;
+	    byte |= (reg << 8u) | (reg2 << 4u);
+	}
+	else if (arg2 == TOKEN::NUM)
 	{
 	    byte = 0x6000;
 	    int nn = std::stoi(v2);
@@ -331,44 +388,118 @@ uint16_t Generator::parseSNE()
 }
 
 
-uint16_t reorder_byte(const uint16_t byte)
+uint16_t Generator::parseRET()
 {
-    uint16_t rbyte = (0xFF00 & (byte << 8u)) | (0x00FF & (byte >> 8u));
-    return rbyte;
+    // RET (0x00EE)
+
+    uint16_t byte = 0x00EE;
+    return byte;
 }
 
-
-int reg_x(const std::string& reg)
+uint16_t Generator::parseCALL()
 {
-    switch(reg.c_str()[1])
+    // CALL addr (0x2nnn)
+
+    auto [arg1, v1] = nextToken();
+
+    uint16_t byte = 0x2000;
+
+    if (arg1 == TOKEN::NUM)
     {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-	    return std::atoi(&reg[1]);
-	case 'A':
-	    return 10;
-	case 'B':
-	    return 11;
-	case 'C':
-	    return 12;
-	case 'D':
-	    return 13;
-	case 'E':
-	    return 14;
-	case 'F':
-	    return 15;
-	default:
-	    break;
+	int nnn = std::stoi(v1);
+	byte |= nnn;
+    }
+    else if (arg1 == TOKEN::LABEL_DEREF)
+    {
+	std::string label = v1;
+	int nnn = offset_table[label.substr(1)];
+	byte |= nnn;
     }
 
-    return -1;
+    return byte;
 }
+
+uint16_t Generator::parseSE()
+{
+    // SE Vx, byte (0x3xkk)
+
+    auto [arg1, v1] = nextToken();
+    auto [arg2, v2] = nextToken();
+
+    uint16_t byte = 0x3000;
+
+    if (arg1 == TOKEN::REG)
+    {
+	int reg = reg_x(v1);
+
+	if (arg2 == TOKEN::NUM)
+	{
+	    int kk = std::stoi(v2);
+	    byte |= (reg << 8u) | kk;
+	}
+    }
+
+    return byte;
+}
+
+
+uint16_t Generator::parseSUB()
+{
+    // SUB Vx, Vy (0x8xy5)
+    // sets VF = 1 if Vx > Vy
+
+    auto [arg1, v1] = nextToken();
+    auto [arg2, v2] = nextToken();
+
+    uint16_t byte = 0x8005;
+
+    if (arg1 == TOKEN::REG && arg2 == TOKEN::REG)
+    {
+	int vx = reg_x(v1);
+	int vy = reg_x(v2);
+
+	byte |= (vx << 8u) | (vy << 4u);
+    }
+
+    return byte;
+}
+
+/*
+uint16_t Generator::parseOR()
+{
+}
+
+uint16_t Generator::parseAND()
+{
+}
+
+uint16_t Generator::parseXOR()
+{
+}
+
+uint16_t Generator::parseSHR()
+{
+}
+
+uint16_t Generator::parseSUBN()
+{
+}
+
+uint16_t Generator::parseSHL()
+{
+}
+
+
+uint16_t Generator::parseRND()
+{
+}
+
+uint16_t Generator::parseSKP()
+{
+}
+
+uint16_t Generator::parseSKNP()
+{
+}
+*/
 

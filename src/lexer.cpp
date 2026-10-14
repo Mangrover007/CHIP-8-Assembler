@@ -55,19 +55,51 @@ std::string Lexer::parseNum(const std::string& num)
 
 void Lexer::init()
 {
+    // CHIP-8 instructions
     keywords.insert({"CLS", TOKEN::CLS});
+    keywords.insert({"RET", TOKEN::RET});
+    keywords.insert({"JMP", TOKEN::JMP});
+    keywords.insert({"CALL", TOKEN::CALL});
     keywords.insert({"ADD", TOKEN::ADD});
+    keywords.insert({"SE", TOKEN::SE});
+    keywords.insert({"SNE", TOKEN::SNE});
     keywords.insert({"LD", TOKEN::LD});
+    keywords.insert({"OR", TOKEN::OR});
+    keywords.insert({"AND", TOKEN::AND});
+    keywords.insert({"XOR", TOKEN::XOR});
+    keywords.insert({"SUB", TOKEN::SUB});
+
+    keywords.insert({"SHR", TOKEN::SHR});
+    keywords.insert({"SUBN", TOKEN::SUBN});
+    keywords.insert({"SHL", TOKEN::SHL});
+
+    keywords.insert({"RND", TOKEN::RND});
+    keywords.insert({"DRW", TOKEN::DRW});
+    keywords.insert({"SKP", TOKEN::SKP});
+    keywords.insert({"SKNP", TOKEN::SKNP});
+
+    // registers
     keywords.insert({"V0", TOKEN::REG});
     keywords.insert({"V1", TOKEN::REG});
     keywords.insert({"V2", TOKEN::REG});
     keywords.insert({"V3", TOKEN::REG});
+    keywords.insert({"V4", TOKEN::REG});
+    keywords.insert({"V5", TOKEN::REG});
+    keywords.insert({"V6", TOKEN::REG});
+    keywords.insert({"V7", TOKEN::REG});
+    keywords.insert({"V8", TOKEN::REG});
+    keywords.insert({"V9", TOKEN::REG});
+    keywords.insert({"VA", TOKEN::REG});
+    keywords.insert({"VB", TOKEN::REG});
+    keywords.insert({"VC", TOKEN::REG});
+    keywords.insert({"VD", TOKEN::REG});
+    keywords.insert({"VE", TOKEN::REG});
+    keywords.insert({"VF", TOKEN::REG});
+
     keywords.insert({"I", TOKEN::IDX});
     keywords.insert({"[I]", TOKEN::IDX_DEREF});
-    keywords.insert({"JMP", TOKEN::JMP});
-    keywords.insert({"DRW", TOKEN::DRW});
-    keywords.insert({"SE", TOKEN::SE});
-    keywords.insert({"SNE", TOKEN::SNE});
+    
+    // custom instructions
     keywords.insert({"STR", TOKEN::STR});
 
     stoi['0'] = 0;
@@ -86,7 +118,6 @@ void Lexer::init()
     stoi['D'] = 13;
     stoi['E'] = 14;
     stoi['F'] = 15;
-
 }
 
 
