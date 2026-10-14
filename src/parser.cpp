@@ -343,6 +343,16 @@ int Parser::parseAssignment(const std::vector<std::pair<TOKEN, std::string>>& to
 	int temp = parseExpr(tokstream);
 	return temp;
     }
+    else if (token == TOKEN::NUM)
+    {
+	return std::stoi(value);
+    }
+    else if (token == TOKEN::VAR_DEREF)
+    {
+	std::string var = value;
+	var.pop_back();
+	return var_lookup_table[var];
+    }
 
     return -1;
 }
