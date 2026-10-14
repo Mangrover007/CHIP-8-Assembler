@@ -33,13 +33,30 @@ private:
 
     std::ofstream out;
 
+    // CHIP-8 instructions
     uint16_t parseCLS();
+    uint16_t parseRET();
     uint16_t parseJMP();
-    uint16_t parseLD();
-    uint16_t parseDRW();
+    uint16_t parseCALL();
     uint16_t parseADD();
+    uint16_t parseSE();
     uint16_t parseSNE();
+    uint16_t parseLD();
+    uint16_t parseOR();
+    uint16_t parseAND();
+    uint16_t parseXOR();
+    uint16_t parseSUB();
 
+    uint16_t parseSHR();
+    uint16_t parseSUBN();
+    uint16_t parseSHL();
+
+    uint16_t parseRND();
+    uint16_t parseDRW();
+    uint16_t parseSKP();
+    uint16_t parseSKNP();
+
+    // custom instructions
     void parseSTR();
 };
 

@@ -122,6 +122,11 @@ std::vector<std::pair<TOKEN, std::string>> Parser::parse(const std::vector<std::
 	    case TOKEN::DRW:
 	    case TOKEN::ADD:
 	    case TOKEN::SNE:
+	    case TOKEN::SE:
+	    case TOKEN::RET:
+	    case TOKEN::CALL:
+	    case TOKEN::SUB:
+		std::cout << "CURRENT OFFSET: " << std::hex << offset << ' ' << value << std::endl;
 		offset += 2;
 		mod_tokstream.push_back({token, value});
 		break;
@@ -294,6 +299,11 @@ int Parser::parseExpr(const std::vector<std::pair<TOKEN, std::string>>& tokstrea
 	    int temp = parseExpr(tokstream);
 	    val = std::to_string(temp);
 	}
+	else if (tok == TOKEN::LABEL_DEREF)
+	{
+	    std::string label = val;
+	    val = std::to_string(offset_table[label.substr(1)]);
+	}
 	else if (tok == TOKEN::VAR_DEREF)
 	{
 	    std::string var = tokstream[j].second;
@@ -342,6 +352,16 @@ int Parser::parseAssignment(const std::vector<std::pair<TOKEN, std::string>>& to
 	j++;
 	int temp = parseExpr(tokstream);
 	return temp;
+    }
+    else if (token == TOKEN::NUM)
+    {
+	return std::stoi(value);
+    }
+    else if (token == TOKEN::VAR_DEREF)
+    {
+	std::string var = value;
+	var.pop_back();
+	return var_lookup_table[var];
     }
 
     return -1;

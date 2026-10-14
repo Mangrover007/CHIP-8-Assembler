@@ -40,12 +40,28 @@ enum class TOKEN
 
     // instructions
     CLS,
+    DRW,
+
+    // partially implemented into the generator / parser
     ADD,
     LD,
     JMP,
-    DRW,
-    SNE,
+
+    // not implemented into the generator / parser yet
+    RET,
+    CALL,
     SE,
+    SNE,
+    OR,
+    AND,
+    XOR,
+    SUB,
+    SHR,
+    SUBN,
+    SHL,
+    RND,
+    SKP,
+    SKNP,
 
     EOFF,
 };
