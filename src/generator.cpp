@@ -185,6 +185,8 @@ void Generator::generate()
 
 uint16_t Generator::parseCLS()
 {
+    // CLS	0x00E0
+
     uint16_t byte = 0x00E0;
     return byte;
 }
@@ -193,8 +195,9 @@ uint16_t Generator::parseCLS()
 uint16_t Generator::parseJMP()
 {
     // two JMP instructions are possible:
-    // JMP addr 	(0x1nnn)
-    // JMP V0, addr	(0xbnnn)
+    // JMP addr 	0x1nnn
+    // JMP V0, addr	0xbnnn
+    
     auto [arg1, v1] = nextToken();
     uint16_t byte = 0x1000;
 
@@ -231,9 +234,17 @@ uint16_t Generator::parseJMP()
 uint16_t Generator::parseLD()
 {
     // bunch of LD instruction are possible:
-    // LD Vx, nn (0x6xnn)
-    // LD I, nnn (0xAnnn)
-    // LD [I], Vx (0xFx55)
+    // LD Vx, byte	0x6xnn		done
+    // LD Vx, Vy	0x8xy		done
+    // LD I, nnn	0xAnnn		done
+    // LD Vx, delay_timer	0xFx07
+    // LD delay_timer, Vx	0xFx15
+    // LD sound_timer, Vx	0xFx18
+    // LD F, Vx		0xFx29
+    // LD B, Vx		0xFx33
+    // LD [I], Vx	0xFx55		done
+    // LD Vx, [I] 	0xFx65		done
+    
     auto [arg1, v1] = nextToken();
     auto [arg2, v2] = nextToken();
 
@@ -249,6 +260,8 @@ uint16_t Generator::parseLD()
 	    byte = 0x8000;
 	    byte |= (reg << 8u) | (reg2 << 4u);
 	}
+
+	// arg2 = byte
 	else if (arg2 == TOKEN::NUM)
 	{
 	    byte = 0x6000;
@@ -266,6 +279,8 @@ uint16_t Generator::parseLD()
 	    
 	    byte |= nnn;
 	}
+
+	// LD Vx, [I]
 	else if (arg2 == TOKEN::IDX_DEREF)
 	{
 	    byte = 0xF065;
@@ -303,6 +318,9 @@ uint16_t Generator::parseLD()
 
 uint16_t Generator::parseDRW()
 {
+    // DRW Vx, Vy, n	0xDxyn
+    // Vx = x pos | Vy = y pos | n = height
+
     auto [arg1, v1] = nextToken();
     auto [arg2, v2] = nextToken();
     auto [arg3, v3] = nextToken();
@@ -322,6 +340,7 @@ uint16_t Generator::parseADD()
     // ADD Vx, byte (0x7xkk)
     // ADD Vx, Vy   (0x8xy2)
     // ADD I, Vx    (0xFx1E)
+
     auto [arg1, v1] = nextToken();
     auto [arg2, v2] = nextToken();
 
@@ -474,6 +493,9 @@ uint16_t Generator::parseSUB()
 
 uint16_t Generator::parseSHL()
 {
+    // SHL Vx, Vy 	0x8xyE
+    // shift left Vy by 1 and store result in Vx
+    
     auto [arg1, v1] = nextToken();
     auto [arg2, v2] = nextToken();
 
@@ -492,6 +514,9 @@ uint16_t Generator::parseSHL()
 
 uint16_t Generator::parseSHR()
 {
+    // SHR Vx, Vy 	0x8xy6
+    // shift right Vy by 1 and store result in Vx
+
     auto [arg1, v1] = nextToken();
     auto [arg2, v2] = nextToken();
 
@@ -510,6 +535,8 @@ uint16_t Generator::parseSHR()
 
 uint16_t Generator::parseAND()
 {
+    // AND Vx, Vy	0x8xy2
+
     auto [arg1, v1] = nextToken();
     auto [arg2, v2] = nextToken();
 
@@ -528,6 +555,8 @@ uint16_t Generator::parseAND()
 
 uint16_t Generator::parseOR()
 {
+    // OR Vx, Vy	0x8xy1
+
     auto [arg1, v1] = nextToken();
     auto [arg2, v2] = nextToken();
 
@@ -547,6 +576,8 @@ uint16_t Generator::parseOR()
 
 uint16_t Generator::parseXOR()
 {
+    // XOR Vx, Vy	0x8xy3
+    
     auto [arg1, v1] = nextToken();
     auto [arg2, v2] = nextToken();
 
@@ -563,21 +594,86 @@ uint16_t Generator::parseXOR()
     return byte;
 }
 
-/*
 uint16_t Generator::parseSUBN()
 {
+    // SUBN Vx, Vy 	0x8xy7
+   
+    auto [arg1, v1] = nextToken();
+    auto [arg2, v2] = nextToken();
+
+    uint16_t byte;
+
+    if (arg1 == TOKEN::REG && arg2 == TOKEN::REG)
+    {
+	int vx = reg_x(v1), vy = reg_x(v2);
+	byte = 0x8007 | (vx << 8u) | (vy << 4u);
+    }
+
+    return byte;
 }
 
 uint16_t Generator::parseRND()
 {
+    // RND Vx mask	0xCxkk
+    
+    auto [arg1, v1] = nextToken();
+    auto [arg2, v2] = nextToken();
+
+    uint16_t byte;
+
+    if (arg1 == TOKEN::REG)
+    {
+	int vx = reg_x(v1);
+	int kk;
+
+	if (arg2 == TOKEN::NUM)
+	{
+	    kk = std::stoi(v2);
+	}
+	else if (arg2 == TOKEN::VAR_DEREF)
+	{
+	    std::string var = v2;
+	    var.pop_back();
+	    kk = var_lookup_table[var];
+	}
+
+	byte = 0xC000 | (vx << 8u) | kk;
+    }
+
+    return byte;
 }
 
 uint16_t Generator::parseSKP()
 {
+    // SKP Vx 	0xEx9E
+    
+    auto [arg1, v1] = nextToken();
+
+    uint16_t byte;
+
+    if (arg1 == TOKEN::REG)
+    {
+	int vx = reg_x(v1);
+	byte = 0xE09E | (vx << 8u);
+    }
+
+    return byte;
 }
 
 uint16_t Generator::parseSKNP()
 {
+    // SKNP Vx	0xExA1
+
+    auto [arg1, v1] = nextToken();
+
+    uint16_t byte;
+
+    if (arg1 == TOKEN::REG)
+    {
+	int vx = reg_x(v1);
+	byte = 0xE0A1 | (vx << 8u);
+    }
+
+    return byte;
 }
-*/
 
