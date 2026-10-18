@@ -126,6 +126,11 @@ std::vector<std::pair<TOKEN, std::string>> Parser::parse(const std::vector<std::
 	    case TOKEN::RET:
 	    case TOKEN::CALL:
 	    case TOKEN::SUB:
+	    case TOKEN::SHL:
+	    case TOKEN::SHR:
+	    case TOKEN::AND:
+	    case TOKEN::OR:
+	    case TOKEN::XOR:
 		std::cout << "CURRENT OFFSET: " << std::hex << offset << ' ' << value << std::endl;
 		offset += 2;
 		mod_tokstream.push_back({token, value});

@@ -22,7 +22,7 @@ uint16_t reorder_byte(const uint16_t byte)
 
 int reg_x(const std::string& reg)
 {
-    switch(reg.c_str()[1])
+    switch(reg[1])
     {
 	case '0':
 	case '1':
@@ -89,6 +89,11 @@ void Generator::init()
     parseTable.insert({TOKEN::RET, &Generator::parseRET});
     parseTable.insert({TOKEN::CALL, &Generator::parseCALL});
     parseTable.insert({TOKEN::SUB, &Generator::parseSUB});
+    parseTable.insert({TOKEN::SHL, &Generator::parseSHL});
+    parseTable.insert({TOKEN::SHR, &Generator::parseSHR});
+    parseTable.insert({TOKEN::AND, &Generator::parseAND});
+    parseTable.insert({TOKEN::OR, &Generator::parseOR});
+    parseTable.insert({TOKEN::XOR, &Generator::parseXOR});
 }
 
 
@@ -413,6 +418,9 @@ uint16_t Generator::parseCALL()
     {
 	std::string label = v1;
 	int nnn = offset_table[label.substr(1)];
+	std::cout << "CALL INSTRUCTION GENERATION, LABEL DEREF";
+	std::cout << std::endl;
+	std::cout << v1 << std::hex << nnn << std::endl;
 	byte |= nnn;
     }
 
@@ -464,31 +472,101 @@ uint16_t Generator::parseSUB()
     return byte;
 }
 
-/*
-uint16_t Generator::parseOR()
+uint16_t Generator::parseSHL()
 {
-}
+    auto [arg1, v1] = nextToken();
+    auto [arg2, v2] = nextToken();
 
-uint16_t Generator::parseAND()
-{
-}
+    uint16_t byte = 0x800E;
+    
+    if (arg1 == TOKEN::REG && arg2 == TOKEN::REG)
+    {
+	int vx = reg_x(v1);
+	int vy = reg_x(v2);
 
-uint16_t Generator::parseXOR()
-{
+	byte |= (vx << 8u) | (vy << 4u);
+    }
+
+    return byte;
 }
 
 uint16_t Generator::parseSHR()
 {
+    auto [arg1, v1] = nextToken();
+    auto [arg2, v2] = nextToken();
+
+    uint16_t byte = 0x8006;
+    
+    if (arg1 == TOKEN::REG && arg2 == TOKEN::REG)
+    {
+	int vx = reg_x(v1);
+	int vy = reg_x(v2);
+
+	byte |= (vx << 8u) | (vy << 4u);
+    }
+
+    return byte;
 }
 
+uint16_t Generator::parseAND()
+{
+    auto [arg1, v1] = nextToken();
+    auto [arg2, v2] = nextToken();
+
+    uint16_t byte = 0x8002;
+    
+    if (arg1 == TOKEN::REG && arg2 == TOKEN::REG)
+    {
+	int vx = reg_x(v1);
+	int vy = reg_x(v2);
+
+	byte |= (vx << 8u) | (vy << 4u);
+    }
+
+    return byte;
+}
+
+uint16_t Generator::parseOR()
+{
+    auto [arg1, v1] = nextToken();
+    auto [arg2, v2] = nextToken();
+
+    uint16_t byte = 0x8001;
+    
+    if (arg1 == TOKEN::REG && arg2 == TOKEN::REG)
+    {
+	int vx = reg_x(v1);
+	int vy = reg_x(v2);
+
+	byte |= (vx << 8u) | (vy << 4u);
+    }
+
+    return byte;
+}
+
+
+uint16_t Generator::parseXOR()
+{
+    auto [arg1, v1] = nextToken();
+    auto [arg2, v2] = nextToken();
+
+    uint16_t byte = 0x8003;
+    
+    if (arg1 == TOKEN::REG && arg2 == TOKEN::REG)
+    {
+	int vx = reg_x(v1);
+	int vy = reg_x(v2);
+
+	byte |= (vx << 8u) | (vy << 4u);
+    }
+
+    return byte;
+}
+
+/*
 uint16_t Generator::parseSUBN()
 {
 }
-
-uint16_t Generator::parseSHL()
-{
-}
-
 
 uint16_t Generator::parseRND()
 {
