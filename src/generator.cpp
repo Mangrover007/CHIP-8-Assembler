@@ -94,6 +94,10 @@ void Generator::init()
     parseTable.insert({TOKEN::AND, &Generator::parseAND});
     parseTable.insert({TOKEN::OR, &Generator::parseOR});
     parseTable.insert({TOKEN::XOR, &Generator::parseXOR});
+    parseTable.insert({TOKEN::SUBN, &Generator::parseSUBN});
+    parseTable.insert({TOKEN::RND, &Generator::parseRND});
+    parseTable.insert({TOKEN::SKP, &Generator::parseSKP});
+    parseTable.insert({TOKEN::SKNP, &Generator::parseSKNP});
 }
 
 
@@ -338,7 +342,7 @@ uint16_t Generator::parseADD()
 {
     // three kinds of ADD instructions:
     // ADD Vx, byte (0x7xkk)
-    // ADD Vx, Vy   (0x8xy2)
+    // ADD Vx, Vy   (0x8xy4)
     // ADD I, Vx    (0xFx1E)
 
     auto [arg1, v1] = nextToken();
@@ -352,7 +356,7 @@ uint16_t Generator::parseADD()
 	{
 	    int Vx = reg_x(v1);
 	    int Vy = reg_x(v2);
-	    byte = 0x8002 | (Vx << 8u) | (Vy << 4u);
+	    byte = 0x8004 | (Vx << 8u) | (Vy << 4u);
 	}
 	else if (arg2 == TOKEN::NUM)
 	{
