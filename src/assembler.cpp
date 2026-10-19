@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 {
     std::vector<std::pair<TOKEN, std::string>> tokstream;
 
-    Lexer lexer = Lexer{"/home/mango/personal/CHIP-8-Assembler/test-roms/rom4.asm"};
+    Lexer lexer = Lexer{"/home/mango/personal/CHIP-8-Assembler/test-roms/rom5.asm"};
     tokstream = lexer.lex();
     
     printTokStream(tokstream);

@@ -98,6 +98,8 @@ void Lexer::init()
 
     keywords.insert({"I", TOKEN::IDX});
     keywords.insert({"[I]", TOKEN::IDX_DEREF});
+    keywords.insert({"DT", TOKEN::DELAY_TIMER});
+    keywords.insert({"ST", TOKEN::SOUND_TIMER});
     
     // custom instructions
     keywords.insert({"STR", TOKEN::STR});

@@ -287,8 +287,13 @@ uint16_t Generator::parseLD()
 	// LD Vx, [I]
 	else if (arg2 == TOKEN::IDX_DEREF)
 	{
-	    byte = 0xF065;
-	    byte |= (reg << 8u);
+	    byte = 0xF065 | (reg << 8u);
+	}
+
+	// LD Vx, delay_timer	0xFx07
+	else if (arg2 == TOKEN::DELAY_TIMER)
+	{
+	    byte = 0xF007 | (reg << 8u);
 	}
     }
     else if (arg1 == TOKEN::IDX)
@@ -313,6 +318,22 @@ uint16_t Generator::parseLD()
 	{
 	    int reg = reg_x(v2);
 	    byte = 0xF055 | (reg << 8u);
+	}
+    }
+    else if (arg1 == TOKEN::DELAY_TIMER)
+    {
+	if (arg2 == TOKEN::REG)
+	{
+	    int vx = reg_x(v2);
+	    byte = 0xF015 | (vx << 8u);
+	}
+    }
+    else if (arg1 == TOKEN::SOUND_TIMER)
+    {
+	if (arg2 == TOKEN::REG)
+	{
+	    int vx = reg_x(v2);
+	    byte = 0xF018 | (vx << 8u);
 	}
     }
 
