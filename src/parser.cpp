@@ -7,7 +7,7 @@
 bool priority(const std::string& op1, const std::string& op2);
 
 
-Parser::Parser() : offset(0x200), j(0)
+Parser::Parser() : offset(0x200 - 0x2), j(0)
 {
 }
 
@@ -41,7 +41,7 @@ std::vector<std::pair<TOKEN, std::string>> Parser::parse(const std::vector<std::
 	switch(token)
 	{
 	    case TOKEN::LABEL:
-		offset_table.insert({value, offset});
+		offset_table.insert({value, offset + 0x2});
 		break;
 
 	    case TOKEN::VAR:
@@ -148,6 +148,8 @@ std::vector<std::pair<TOKEN, std::string>> Parser::parse(const std::vector<std::
 	    case TOKEN::VAR_DEREF:
 	    case TOKEN::LIST_DEREF:
 	    case TOKEN::EOFF:
+	    case TOKEN::DELAY_TIMER:
+	    case TOKEN::SOUND_TIMER:
 		mod_tokstream.push_back({token, value});
 		break;
 

@@ -21,6 +21,8 @@ enum class TOKEN
     IDX,	// index register
     IDX_DEREF,	// for instructions like Fx55: LD [I], Vx
     LABEL_DEREF,	// what the fuck is this doing?
+    SOUND_TIMER,
+    DELAY_TIMER,
 
     // variables and lists
     VAR,	// example: %var
@@ -47,7 +49,7 @@ enum class TOKEN
     LD,
     JMP,
 
-    // not implemented into the generator / parser yet
+    // implemented into the generator / parser
     RET,
     CALL,
     SE,
