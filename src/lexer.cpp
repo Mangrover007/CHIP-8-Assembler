@@ -204,7 +204,7 @@ TOKEN Lexer::tokFromWord(const std::string& word)
     {
 	return TOKEN::ASSIGN;
     }
-    else if (word[0] == '+' || word[0] == '*' || word[0] == '-' || word[0] == '/' || word[0] == '^')
+    else if (word[0] == '+' || word[0] == '*' || word[0] == '-' || word[0] == '/' || word[0] == '^' || word[0] == '|')
     {
 	return TOKEN::MATH_OP;
     }
@@ -403,7 +403,7 @@ std::pair<TOKEN, std::string> Lexer::nextToken()
 	return {tokFromWord(word), word};
     }
 
-    else if (buf[i] == '+' || buf[i] == '*' || buf[i] == '-' || buf[i] == '/' || buf[i] == '^')
+    else if (buf[i] == '+' || buf[i] == '*' || buf[i] == '-' || buf[i] == '/' || buf[i] == '^' || buf[i] == '|')
     {
 	int j = i;
 	std::string word;
