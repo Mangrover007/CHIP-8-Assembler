@@ -181,7 +181,7 @@ std::vector<std::string> Parser::infix_to_postfix(const std::vector<std::string>
     int i = 0;
     while (i < buffer.size())
     {
-	if (buffer[i] == "+" || buffer[i] == "-" || buffer[i] == "*" || buffer[i] == "/" || buffer[i] == "^")
+	if (buffer[i] == "+" || buffer[i] == "-" || buffer[i] == "*" || buffer[i] == "/" || buffer[i] == "^" || buffer[i] == "|")
 	{
 	    while (!st.empty() && priority(st.top(), buffer[i]))
 	    {
@@ -223,7 +223,7 @@ int Parser::eval_postfixexpr(const std::vector<std::string>& postfix)
     int i = 0;
     while (i < postfix.size())
     {
-	if (postfix[i] == "*" || postfix[i] == "/" || postfix[i] == "+" || postfix[i] == "-" || postfix[i] == "^")
+	if (postfix[i] == "*" || postfix[i] == "/" || postfix[i] == "+" || postfix[i] == "-" || postfix[i] == "^" || postfix[i] == "|")
 	{
 	    int a = st.top(); st.pop();
 	    int b = st.top(); st.pop();
@@ -247,6 +247,10 @@ int Parser::eval_postfixexpr(const std::vector<std::string>& postfix)
 	    else if (postfix[i] == "^")
 	    {
 		st.push(b ^ a);
+	    }
+	    else if (postfix[i] == "|")
+	    {
+		st.push(b | a);
 	    }
 	}
 	else
@@ -436,7 +440,7 @@ std::vector<uint8_t> Parser::parseListAssignment(const std::vector<std::pair<TOK
 
 bool priority(const std::string& op1, const std::string& op2)
 {
-    if (op1 == "^")
+    if (op1 == "^" || op1 == "|")
     {
 	return true;
     }
