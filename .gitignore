@@ -1,4 +1,5 @@
 **/build
 *.out
 *.ch8
+logs.txt
 

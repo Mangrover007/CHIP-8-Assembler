@@ -103,6 +103,7 @@ void Lexer::init()
     
     // custom instructions
     keywords.insert({"STR", TOKEN::STR});
+    keywords.insert({"RES", TOKEN::RES});
 
     stoi['0'] = 0;
     stoi['1'] = 1;
@@ -136,14 +137,20 @@ std::vector<std::pair<TOKEN, std::string>> Lexer::lex()
 
 	if (token == TOKEN::NUM)
 	{
+#ifdef DEBUG_LEXER
 	    std::cout << "Number: " << std::endl;
+#endif
 	    value = parseNum(value);
+#ifdef DEBUG_LEXER
 	    std::cout << "Number: " << std::endl;
+#endif
 	}
 
 	tokstream.push_back({token, value});
 
+#ifdef DEBUG_LEXER
 	std::cout << "Pushing token: " << value << std::endl;
+#endif
 
 	if (token == TOKEN::EOFF)
 	{
@@ -151,7 +158,9 @@ std::vector<std::pair<TOKEN, std::string>> Lexer::lex()
 	}
     }
 
+#ifdef DEBUG_LEXER
     std::cout << "Returning token stream" << std::endl;
+#endif
 
     return tokstream;
 }
@@ -269,16 +278,18 @@ void Lexer::removeWhitespaces()
 
 std::pair<TOKEN, std::string> Lexer::nextToken()
 {
+#ifdef DEBUG_LEXER
     std::cout << "Parsing next token" << std::endl;
+#endif
     if (i >= size)
     {
 	return {TOKEN::EOFF, ""};
     }
 
     removeWhitespaces();
-
+#ifdef DEBUG_LEXER
     std::cout << "Not a whitespace, not a newline, not a comment wtf: '" << buf[i] << "'" << std::endl;
-
+#endif
     // ----------------------------------------------------------------- //
     // comments
     if (buf[i] == ';')
@@ -288,7 +299,9 @@ std::pair<TOKEN, std::string> Lexer::nextToken()
 	    i++;
 	}
 
-	// std::cout << "SPACE: " << isspace(buf[i]) << std::endl;
+#ifdef DEBUG_LEXER
+	std::cout << "SPACE: " << isspace(buf[i]) << std::endl;
+#endif
 	return {TOKEN::COMMENT, ""};
     }
 
@@ -478,7 +491,9 @@ std::pair<TOKEN, std::string> Lexer::nextToken()
 
 	i = j;
 
+#ifdef DEBUG_LEXER
 	std::cout << "what kind of label is this? '" << word << "'" << std::endl;
+#endif
 
 	return {tokFromWord(word), word};
     }
@@ -501,7 +516,9 @@ std::pair<TOKEN, std::string> Lexer::nextToken()
 	    j++;
 	    while (j < size && ishex(buf[j]))
 	    {
+#ifdef DEBUG_LEXER
 		std::cout << "Pushing: " << buf[j] << std::endl;
+#endif
 		number.push_back(buf[j]);
 		j++;
 	    }
