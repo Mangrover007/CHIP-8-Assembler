@@ -15,6 +15,7 @@ enum class TOKEN
     STR,	// to store sprites because i cant be bothered to do it otherwise
 		// note that only 8 bit lists are allowed as a consequence
 		// because only 8 bit sprites exist in CHIP-8
+    RES, 	// reserve some amount of space ahead of time
 
     // i need all of these in the modified token stream
     REG, 	// registers

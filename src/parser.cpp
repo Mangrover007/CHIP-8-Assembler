@@ -41,7 +41,10 @@ std::vector<std::pair<TOKEN, std::string>> Parser::parse(const std::vector<std::
 	switch(token)
 	{
 	    case TOKEN::LABEL:
+		std::cout << "Offset is " << offset << std::endl;
 		offset_table.insert({value, offset + 0x2});
+		std::cout << "Label: " << value << ' ';
+		std::cout << "Offset: " << offset + 0x2 << std::endl;
 		break;
 
 	    case TOKEN::VAR:
@@ -116,6 +119,35 @@ std::vector<std::pair<TOKEN, std::string>> Parser::parse(const std::vector<std::
 		mod_tokstream.push_back(tokstream[j]); // push TOKEN::[LABEL | VAR | LIST]_DEREF
 		break;
 
+	    case TOKEN::RES:
+		mod_tokstream.push_back({token, value});
+		{
+		    j++;
+		    int res_bytes;
+		    if (tokstream[j].first == TOKEN::NUM)
+		    {
+			res_bytes = std::stoi(tokstream[j].second);
+		    }
+		    else if (tokstream[j].first == TOKEN::LS)
+		    {
+			j++;
+			res_bytes = parseExpr(tokstream);
+		    }
+
+		    if (res_bytes % 2 == 1)
+		    {
+			res_bytes += 1;
+		    }
+
+		    std::cout << "Reserving bytes: ";
+		    std::cout << res_bytes << std::endl;
+
+		    offset += res_bytes;
+		    mod_tokstream.push_back({TOKEN::NUM, std::to_string(res_bytes)});
+		    std::cout << "New offset value: " << offset << std::endl;
+		}
+		break;
+
 	    case TOKEN::CLS:
 	    case TOKEN::JMP:
 	    case TOKEN::LD:
@@ -135,8 +167,8 @@ std::vector<std::pair<TOKEN, std::string>> Parser::parse(const std::vector<std::
 	    case TOKEN::RND:
 	    case TOKEN::SKP:
 	    case TOKEN::SKNP:
-		std::cout << "CURRENT OFFSET: " << std::hex << offset << ' ' << value << std::endl;
 		offset += 2;
+		std::cout << "CURRENT OFFSET: " << std::hex << offset << ' ' << value << std::endl;
 		mod_tokstream.push_back({token, value});
 		break;
 
@@ -316,7 +348,9 @@ int Parser::parseExpr(const std::vector<std::pair<TOKEN, std::string>>& tokstrea
 	}
 	else if (tok == TOKEN::LABEL_DEREF)
 	{
-	    std::string label = val;
+	    std::string label = tokstream[j].second;
+	    std::cout << "dereferencing label i see" << std::endl;
+	    std::cout << label << std::endl;
 	    val = std::to_string(offset_table[label.substr(1)]);
 	}
 	else if (tok == TOKEN::VAR_DEREF)
@@ -409,6 +443,28 @@ std::vector<uint8_t> Parser::parseList(const std::vector<std::pair<TOKEN, std::s
 	    case TOKEN::LS:
 		j++;
 		buffer.push_back(parseExpr(tokstream));
+		break;
+
+	    case TOKEN::LIST_DEREF:
+		{
+		    std::cout << "DERFERENCING LIST I SEE" << std::endl;
+		    std::string list_var = tokstream[j].second;
+		    list_var.pop_back();
+
+		    std::cout << list_var << std::endl;
+
+		    j++;
+		    int list_index = 0;
+
+		    if (tokstream[j].first == TOKEN::LS)
+		    {
+			j++;
+			list_index = parseExpr(tokstream);
+		    }
+
+		    int val = list_lookup_table[list_var][list_index];
+		    buffer.push_back(val);
+		}
 
 	    default:
 		break;

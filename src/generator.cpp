@@ -136,10 +136,10 @@ void Generator::generate()
 		int i = 0;
 		while (i < vec.size() - 1)
 		{
-		    uint16_t byte = 0x0000;
-		    byte |= (vec[i] << 8u) | (vec[i + 1]);
-		    byte = reorder_byte(byte);
-		    out.write((char*) &byte, sizeof(byte));
+		    uint16_t word = 0x0000;
+		    word |= (vec[i] << 8u) | (vec[i + 1]);
+		    word = reorder_byte(word);
+		    out.write((char*) &word, sizeof(word));
 		    i += 2;
 		}
 
@@ -147,10 +147,10 @@ void Generator::generate()
 		{
 		    std::cout << "ONE BYTE REMAINING" << std::endl;
 		    // one byte still remaining
-		    uint16_t byte = 0x0000;
-		    byte |= (vec.back() << 8u);
-		    byte = reorder_byte(byte);
-		    out.write((char*) &byte, sizeof(byte));
+		    uint16_t word = 0x0000;
+		    word |= (vec.back() << 8u);
+		    word = reorder_byte(word);
+		    out.write((char*) &word, sizeof(word));
 		}
 	    }
 	    else if (tok2 == TOKEN::VAR_DEREF)
@@ -168,11 +168,24 @@ void Generator::generate()
 		out.write((char*) &byte, sizeof(byte));
 	    }
 	}
+	else if (token == TOKEN::RES)
+	{
+	    auto [arg1, v1] = nextToken();
+	    if (arg1 == TOKEN::NUM)
+	    {
+		int res_bytes = std::stoi(v1);
+		while (res_bytes--)
+		{
+		    uint8_t byte = 0x00;
+		    out.write((char*) &byte, sizeof(byte));
+		}
+	    }
+	}
 	else if (parseTable.find(token) != parseTable.end())
 	{
-	    uint16_t byte = (*this.*parseTable[token])();
-	    byte = reorder_byte(byte);
-	    out.write((char*) &byte, sizeof(byte));
+	    uint16_t word = (*this.*parseTable[token])();
+	    word = reorder_byte(word);
+	    out.write((char*) &word, sizeof(word));
 	}
 	else
 	{
@@ -429,6 +442,15 @@ uint16_t Generator::parseSNE()
 	else if (arg2 == TOKEN::NUM)
 	{
 	    uint8_t kk = std::stoi(v2);
+	    byte = 0x4000 | (reg << 8u) | kk;
+	}
+	else if (arg2 == TOKEN::VAR_DEREF)
+	{
+	    std::string var = v2;
+	    var.pop_back();
+	    std::cout << "Generator SNE var deref: ";
+	    std::cout << var << std::endl;
+	    uint8_t kk = var_lookup_table[var];
 	    byte = 0x4000 | (reg << 8u) | kk;
 	}
     }
