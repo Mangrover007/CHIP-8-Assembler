@@ -5,6 +5,9 @@
 %UP=0x2
 %DOWN=0x3
 
+; instructions per frame
+%IPF=[16]
+
 JMP #game_loop
 
 ; emulator runs at 1000Hz
@@ -16,50 +19,57 @@ JMP #game_loop
 ; then i would need 4 iterations of this
 ; 8 bit registers, so 255 is the max value
 
+; i want 1/60th of a second
+; 1/60th of a second ~= 16.667 milliseconds
+; in other words, around 16 instructions between frames
+
+; 16 instructions per frame = 62.5 FPS
+
+; i want 1/144th of a second
+; 1/144th of a second ~= 6.9 milliseconds
+; in other words, around 7 instructions between frames
+
 game_loop:	; 0x200 so logically these are +2
-    LD V2, 0
+    ; initial setup
+	LD V4, [0x40 / 0x2]
+	LD V5, [0x20 / 0x2]
+	LD I, [%FONT_START_ADDR%]
+	
+	; initial draw
+	CALL #render
+
+    LD VE, 0
     CALL #reset_timer	; 0x202
 
     ; when DT = 0, one tick is finished
     ; every 0x24 ticks, call render function
-    SE V2, 0x4
-    JMP [%OFFSET% + %INS_SIZE% * 3] 
+    SE VE, 0x1
+    JMP [%OFFSET% + %INS_SIZE% * 4] 
 
-    LD V2, 0
+    LD VE, 0
+    CALL #update
     CALL #render
 
     LD V0, DT
     SE V0, 0	; tick is not finished -> jmp back ; dont if DT = 0
-    JMP [%OFFSET% - %INS_SIZE% * 6]
+    JMP [%OFFSET% - %INS_SIZE% * 7]
     CALL #reset_timer
-    ADD V2, 0x1
-    JMP [%OFFSET% - %INS_SIZE% * 9]
+    ADD VE, 0x1
+    JMP [%OFFSET% - %INS_SIZE% * 10]
 
 reset_timer:
-    LD V0, [0xFF - 0x5]
+    LD V0, [%IPF%]
     LD DT, V0
     RET
 
 render:
-    LD V0, 0
-    LD V1, 0
-    LD I, [%FONT_START_ADDR%]
-    DRW V0, V1, 0x5
+    DRW V4, V5, 0x5
     RET
 
-main:
-    LD V4, [0x40 / 0x2]
-    LD V5, [0x20 / 0x2]
-    LD I, [%FONT_START_ADDR%]
-
-    ; initial draw
-    DRW V4, V5, 0x5
-    
-    ; erase sprite
-    DRW V4, V5, 0x5
+update:
+    CALL #render 	; erase sprite
     CALL #processInput
-    DRW V4, V5, 0x5
-    JMP [%OFFSET% - %INS_SIZE% * 4]	; prev instruction
+    RET
 
 processInput:
     LD V0, [%LEFT%]
